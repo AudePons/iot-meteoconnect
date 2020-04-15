@@ -1,0 +1,44 @@
+# Use root/example as user/password credentials
+version: '3.7'
+
+services:
+
+  db:
+    image: mariadb:10.4
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_USER: "user"
+      MYSQL_PASSWORD: "user"
+      MYSQL_DATABASE: "db_iot"
+    volumes:
+      - ./database/conf/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8090:8080
+    volumes:
+      - ./adminer.css:/var/www/html/adminer.css
+
+  node:
+    image: node
+    restart: always
+    working_dir: /home/node/app
+    volumes:
+      - ./server/:/home/node/app
+    expose:
+      - "8080"
+    ports:
+      - 8091:8080
+    command: /bin/sh -c "npm install && npm start" 
+
+  vuejs:
+    image: node
+    working_dir: /home/node/app
+    volumes:
+      - ./client/:/home/node/app
+    ports: 
+      - 8092:8080
+    command: /bin/sh -c "npm install && npm run serve"
